@@ -1,21 +1,34 @@
 pipeline {
-    agent any
-    tools {
-        Maven 'maven 3'
-        Jdk 'jdk 8'
-    }    
+    agent any // Use any available agent to run the job
+
     stages {
-        stage ('Build') {
+        stage('Checkout') {
             steps {
-                sh 'mvn -Dmaven.test.failure.ignore=true install' 
+                // Checkout code from the SCM (GitHub in this case)
+                git branch: '2.1-master', url: 'https://github.com/sravan513/thymeleafexamples-petclinic.git'
             }
-            post {
-                success {
-                    junit 'target/surefire-reports/**/*.xml' 
-        
-		        }
-		  }
-	}
+        }
+
+        stage('Build') {
+            steps {
+                // Run Maven to build the project
+                sh 'mvn clean install'
+            }
+        }
+    post {
+        always {
+            // Always clean up workspace after the build
+            cleanWs()
+        }
+
+        success {
+            // Notify on success (optional)
+            echo 'Build succeeded!'
+        }
+
+        failure {
+            // Notify on failure (optional)
+            echo 'Build failed!'
+        }
     }
 }
-
